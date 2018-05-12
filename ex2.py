@@ -1,11 +1,14 @@
 import os
 
 class Heap:
-    """
-     this function will return the number of the given column
-    """
 
     def getColNum(self, firstLine, colName):
+        """
+        this method will return the number of the attribute wanted
+        :param firstLine: the complete line
+        :param colName: the attribute name
+        :return: the number of the attribute. numbered by seperator: ','
+        """
         firstLine = firstLine[:-1]
         att = firstLine.split(",")
 
@@ -21,8 +24,11 @@ class Heap:
         :param file_name: the name of the heap file to create. example: kiva_heap.txt
         """
         self.fileName = file_name
-        wFile = open(file_name, "w+")
-        wFile.close()
+        try:
+            wFile = open(file_name, "w+")
+            wFile.close()
+        except IOError:
+            print"IO Error has occured"
 
 
 
@@ -31,17 +37,20 @@ class Heap:
         The function create heap file from source file.
         :param source_file: the name of file to create from. example: kiva.txt
         """
-
-        heapFile = open(self.fileName, "a+")
-        readFile = open(source_file, "r")
-        currentLine = readFile.readline()
-
-        while (currentLine != ""):
-            heapFile.write(currentLine)
+        try:
+            heapFile = open(self.fileName, "a+")
+            readFile = open(source_file, "r")
             currentLine = readFile.readline()
 
-        heapFile.close()
-        readFile.close()
+            while (currentLine != ""):
+                heapFile.write(currentLine)
+                currentLine = readFile.readline()
+
+            heapFile.close()
+            readFile.close()
+
+        except IOError:
+            print"IO Error has occured"
 
 
     def insert(self, line):
@@ -49,10 +58,12 @@ class Heap:
         The function insert new line to heap file
         :param line: string reprsent new row, separated by comma. example: '653207,1500.0,USD,Agriculture'
         """
-
-        wFile = open(self.fileName, "a+")
-        wFile.write(line+"\n")
-        wFile.close()
+        try:
+            wFile = open(self.fileName, "a+")
+            wFile.write(line+"\n")
+            wFile.close()
+        except IOError:
+            print "IO Error has occured"
 
 
     def delete(self, col_name, value):
@@ -62,29 +73,31 @@ class Heap:
         :param col_name: the name of the column. example: 'currency'
         :param value: example: 'PKR'
         """
-
-        rFile = open(self.fileName, "r+")
-        wFile = open(self.fileName + ".tmp", "w+")
-        line = rFile.readline()
-        colNum = self.getColNum(line, col_name)
-        flag = False
-
-        while line != "" and colNum != -1:
-            flag = True
-            list = line.split(",")
-            if (list[colNum] != value):
-                wFile.write(line)
+        try:
+            rFile = open(self.fileName, "r+")
+            wFile = open(self.fileName + ".tmp", "w+")
             line = rFile.readline()
+            colNum = self.getColNum(line, col_name)
+            flag = False
 
-        wFile.close()
-        rFile.close()
+            while line != "" and colNum != -1:
+                flag = True
+                list = line.split(",")
+                if (list[colNum] != value):
+                    wFile.write(line)
+                line = rFile.readline()
 
-        if flag:
-            os.remove(rFile.name)
-            os.rename(wFile.name, self.fileName)
-        else:
-            os.remove(wFile.name)
+            wFile.close()
+            rFile.close()
 
+            if flag:
+                os.remove(rFile.name)
+                os.rename(wFile.name, self.fileName)
+            else:
+                os.remove(wFile.name)
+
+        except IOError:
+            print"IO Error has occured"
 
     def update(self, col_name, old_value, new_value, ):
         """
@@ -93,34 +106,35 @@ class Heap:
         :param old_value: example: 'TZS'
         :param new_value: example: 'NIS'
         """
+        try:
+            rFile = open(self.fileName, "r")
+            wFile = open(self.fileName + ".tmp", "w+")
 
-        rFile = open(self.fileName, "r")
-        wFile = open(self.fileName + ".tmp", "w+")
-
-        line = rFile.readline()
-        colNum = self.getColNum(line, col_name)
-        flag = False
-
-        while line != "" and colNum != -1:
-            flag = True
-            list = line.split(",")
-            if list[colNum] == old_value:
-                list[colNum] = new_value
-                line = ','.join(str(x) for x in list)
-
-            wFile.write(line)
             line = rFile.readline()
+            colNum = self.getColNum(line, col_name)
+            flag = False
 
-        rFile.close()
-        wFile.close()
-        if flag:
+            while line != "" and colNum != -1:
+                flag = True
+                list = line.split(",")
+                if list[colNum] == old_value:
+                    list[colNum] = new_value
+                    line = ','.join(str(x) for x in list)
 
-            os.remove(self.fileName)
-            os.rename(wFile.name, self.fileName)
-        else:
-            os.remove(wFile.name)
+                wFile.write(line)
+                line = rFile.readline()
 
+            rFile.close()
+            wFile.close()
+            if flag:
 
+                os.remove(self.fileName)
+                os.rename(wFile.name, self.fileName)
+            else:
+                os.remove(wFile.name)
+
+        except IOError:
+            print "IO Error has occured"
 
 
 
