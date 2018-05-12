@@ -25,7 +25,6 @@ class Heap:
         wFile.close()
 
 
-
     def create(self, source_file):
         """
         The function create heap file from source file.
@@ -137,6 +136,11 @@ class SortedFile:
         :param file_name: the name of the sorted file to create. example: kiva_sorted.txt
         :param col_name: the name of the column to sort by. example: 'lid'
         """
+
+        self.filename = file_name
+        self.colname = col_name
+        wFile = open(file_name, "w+")
+        wFile.close()
 
     def create(self, source_file):
         """
