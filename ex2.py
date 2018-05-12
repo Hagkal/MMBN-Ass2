@@ -148,6 +148,38 @@ class SortedFile:
         :param source_file: the name of file to create from. example: kiva.txt
         """
 
+        rFile = open(self.filename, "r")
+        wFile1 = open(self.filename + "1" + ".tmp", "w+")
+        wFile2 = open(self.filename + "2" + ".tmp", "w+")
+
+        firstLine = rFile.readline()
+        colNum = getColNum(firstLine, self.colname)
+
+        line = rFile.readline()
+
+        while line != "":
+            value = line[colNum]
+            linetemp1 = wFile1.readline()
+            flag = False
+            while linetemp1 != "":
+                valuetemp1 = linetemp1[colNum]
+                if valuetemp1 < value:
+                    wFile2.write(linetemp1)
+
+                elif flag == False and value < valuetemp1:
+                    wFile2.write(line)
+                    wFile2.write(linetemp1)
+                    line = rFile.readline()
+                    flag = True
+
+                else:
+                    wFile2.write(linetemp1)
+
+                linetemp1 = wFile1.readline()
+
+
+
+
     def insert(self, line):
         """
         The function insert new line to sorted file according to the value of col_name.
