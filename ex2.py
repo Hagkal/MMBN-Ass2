@@ -1,8 +1,29 @@
+import os
+
 class Heap:
+    """
+     this function will return the number of the given column
+    """
+
+    def getColNum(self, firstLine, colName):
+        firstLine = firstLine[:-1]
+        att = firstLine.split(",")
+
+        for i in range(0, len(att)):
+            if att[i] == colName:
+                return i
+
+        return -1
+
+
     def __init__(self, file_name):
         """
         :param file_name: the name of the heap file to create. example: kiva_heap.txt
         """
+        self.fileName = file_name
+        wFile = open(file_name, "w+")
+        wFile.close()
+
 
 
     def create(self, source_file):
@@ -11,11 +32,28 @@ class Heap:
         :param source_file: the name of file to create from. example: kiva.txt
         """
 
+        heapFile = open(self.fileName, "a+")
+        readFile = open(source_file, "r")
+        currentLine = readFile.readline()
+
+        while (currentLine != ""):
+            heapFile.write(currentLine)
+            currentLine = readFile.readline()
+
+        heapFile.close()
+        readFile.close()
+
+
     def insert(self, line):
         """
         The function insert new line to heap file
         :param line: string reprsent new row, separated by comma. example: '653207,1500.0,USD,Agriculture'
         """
+
+        wFile = open(self.fileName, "a+")
+        wFile.write(line+"\n")
+        wFile.close()
+
 
     def delete(self, col_name, value):
         """
@@ -25,6 +63,28 @@ class Heap:
         :param value: example: 'PKR'
         """
 
+        rFile = open(self.fileName, "r+")
+        wFile = open(self.fileName + ".tmp", "w+")
+        line = rFile.readline()
+        colNum = self.getColNum(line, col_name)
+        flag = False
+
+        while line != "" and colNum != -1:
+            flag = True
+            list = line.split(",")
+            if (list[colNum] != value):
+                wFile.write(line)
+            line = rFile.readline()
+
+        wFile.close()
+        rFile.close()
+
+        if flag:
+            os.remove(rFile.name)
+            os.rename(wFile.name, self.fileName)
+        else:
+            os.remove(wFile.name)
+
 
     def update(self, col_name, old_value, new_value, ):
         """
@@ -33,6 +93,35 @@ class Heap:
         :param old_value: example: 'TZS'
         :param new_value: example: 'NIS'
         """
+
+        rFile = open(self.fileName, "r")
+        wFile = open(self.fileName + ".tmp", "w+")
+
+        line = rFile.readline()
+        colNum = self.getColNum(line, col_name)
+        flag = False
+
+        while line != "" and colNum != -1:
+            flag = True
+            list = line.split(",")
+            if list[colNum] == old_value:
+                list[colNum] = new_value
+                line = ','.join(str(x) for x in list)
+
+            wFile.write(line)
+            line = rFile.readline()
+
+        rFile.close()
+        wFile.close()
+        if flag:
+
+            os.remove(self.fileName)
+            os.rename(wFile.name, self.fileName)
+        else:
+            os.remove(wFile.name)
+
+
+
 
 
 # heap = Heap('heap.txt')
@@ -135,3 +224,12 @@ class Hash:
 # test test test
 #lalalala
 
+
+
+test1 = Heap("Test1.txt")
+test1.create("kiva_loans.txt")
+
+test1.insert("666,6.66,HAG,Omri")
+test1.update("currency", "HAG", "KAL")
+test1.update("currency", "ss", "ss")
+test1.delete("corrency", "KAL")
