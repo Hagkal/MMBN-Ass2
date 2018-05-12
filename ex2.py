@@ -142,6 +142,22 @@ class SortedFile:
         wFile = open(file_name, "w+")
         wFile.close()
 
+    def getColNum(self, firstLine, colName):
+        """
+        this method will return the number of the attribute wanted
+        :param firstLine: the complete line
+        :param colName: the attribute name
+        :return: the number of the attribute. numbered by seperator: ','
+        """
+        firstLine = firstLine[:-1]
+        att = firstLine.split(",")
+
+        for i in range(0, len(att)):
+            if att[i] == colName:
+                return i
+
+        return -1
+
     def create(self, source_file):
         """
         The function create sorted file from source file.
@@ -153,9 +169,10 @@ class SortedFile:
         wFile2 = open(self.filename + "2" + ".tmp", "w+")
 
         firstLine = rFile.readline()
-        colNum = getColNum(firstLine, self.colname)
+        colNum = self.getColNum(firstLine, self.colname)
 
         line = rFile.readline()
+        wFile1.write(line)
 
         while line != "":
             value = line[colNum]
@@ -176,6 +193,8 @@ class SortedFile:
                     wFile2.write(linetemp1)
 
                 linetemp1 = wFile1.readline()
+
+            line = rFile.readline()
 
 
 
@@ -262,10 +281,6 @@ class Hash:
 
 
 
-test1 = Heap("Test1.txt")
+test1 = SortedFile("Test1.txt", "sector")
 test1.create("kiva_loans.txt")
 
-test1.insert("666,6.66,HAG,Omri")
-test1.update("currency", "HAG", "KAL")
-test1.update("currency", "ss", "ss")
-test1.delete("corrency", "KAL")
