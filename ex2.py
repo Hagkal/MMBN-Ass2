@@ -164,37 +164,47 @@ class SortedFile:
         :param source_file: the name of file to create from. example: kiva.txt
         """
 
-        rFile = open(self.filename, "r")
+        rFile = open(source_file, "r")
         wFile1 = open(self.filename + "1" + ".tmp", "w+")
         wFile2 = open(self.filename + "2" + ".tmp", "w+")
 
         firstLine = rFile.readline()
         colNum = self.getColNum(firstLine, self.colname)
 
-        line = rFile.readline()
-        wFile1.write(line)
+        lineString = rFile.readline()
+        lineList = lineString.split(',')
+        wFile1.write(lineString)
 
-        while line != "":
-            value = line[colNum]
-            linetemp1 = wFile1.readline()
+        while lineString != "":
+            value = lineList[colNum]
+            linetemp1String = wFile1.readline()
+            linetemp1List = linetemp1String.split(',')
             flag = False
-            while linetemp1 != "":
-                valuetemp1 = linetemp1[colNum]
-                if valuetemp1 < value:
-                    wFile2.write(linetemp1)
+            valuetemp1 = linetemp1List[colNum]
 
-                elif flag == False and value < valuetemp1:
-                    wFile2.write(line)
-                    wFile2.write(linetemp1)
-                    line = rFile.readline()
-                    flag = True
+            if value < valuetemp1:
+                wFile1.write(lineString)
 
-                else:
-                    wFile2.write(linetemp1)
+            else:
+                while linetemp1String != "":
+                    if valuetemp1 < value:
+                        wFile2.write(linetemp1String)
 
-                linetemp1 = wFile1.readline()
+                    elif flag == False and value < valuetemp1:
+                        wFile2.write(lineString)
+                        wFile2.write(linetemp1String)
+                        lineString = rFile.readline()
+                        lineList = lineString.split(',')
+                        flag = True
 
-            line = rFile.readline()
+                    else:
+                        wFile2.write(linetemp1String)
+
+                    linetemp1String = wFile1.readline()
+                    linetemp1List = linetemp1String.split(',')
+
+            lineString = rFile.readline()
+            lineList = lineString.split(',')
 
 
 
