@@ -182,7 +182,7 @@ class SortedFile:
             flag = False
             valuetemp1 = linetemp1List[colNum]
 
-            if value < valuetemp1:
+            if value > valuetemp1:
                 wFile1.write(lineString)
 
             else:
@@ -192,9 +192,6 @@ class SortedFile:
 
                     elif flag == False and value < valuetemp1:
                         wFile2.write(lineString)
-                        wFile2.write(linetemp1String)
-                        lineString = rFile.readline()
-                        lineList = lineString.split(',')
                         flag = True
 
                     else:
@@ -202,6 +199,10 @@ class SortedFile:
 
                     linetemp1String = wFile1.readline()
                     linetemp1List = linetemp1String.split(',')
+                    valuetemp1 = linetemp1List[colNum]
+
+                os.rename(wFile1, wFile2)
+                os.rename(wFile2, wFile1)
 
             lineString = rFile.readline()
             lineList = lineString.split(',')
@@ -215,6 +216,35 @@ class SortedFile:
         :param line: string of row separated by comma. example: '653207,1500.0,USD,Agriculture'
         """
 
+        rFile = open (self.filename, 'r')
+        colNum = self.getColNum(line, self.colname)
+        wFile = open(self.filename + "1" + ".tmp", "w+")
+
+        # copying first line
+        firstLine = rFile.readline()
+        wFile.write(firstLine)
+
+        lineString = rFile.readline()
+        lineList = lineString.split(',')
+        parameterLineList = line.split(',') # line given in a list format
+        flag = False
+
+        while lineString != "":
+            if lineList[colNum] < parameterLineList[colNum] and flag == False:
+                wFile.write(lineString)
+                lineString = rFile.readline()
+                lineList = lineString.split(',')
+
+            elif flag:
+                wFile.write(lineString)
+                lineString = rFile.readline()
+
+            else:
+                wFile.write(line)
+                flag = True
+
+        os.rename(wFile, self.filename)
+
     def delete(self, value):
         """
         The function delete records from sorted file where their value in col_name is value.
@@ -222,13 +252,60 @@ class SortedFile:
         :param value: example: 'PKR'
         """
 
+        rFile = open(self.filename, 'r')
+        firstLine = rFile.readline()
+        colNum = self.getColNum(firstLine, self.colname)
+        wFile = open(self.filename + "1" + ".tmp", "w+")
+
+        # copying first line
+        wFile.write(firstLine)
+
+        lineString = rFile.readline()
+        lineList = lineString.split(',')
+
+        while lineString != "":
+            if lineList[colNum] == value:
+                lineString = rFile.readline()
+                lineList = lineString.split(',')
+
+            else:
+                wFile.write(lineString)
+                lineString = rFile.readline()
+                lineList = lineString.split(',')
+
+        os.rename(wFile, self.filename)
+
     def update(self, old_value, new_value):
         """
         The function update records from the sorted file where their value in col_name is old_value to new_value.
         :param old_value: example: 'TZS'
         :param new_value: example: 'NIS'
         """
+        rFile = open(self.filename, 'r')
+        firstLine = rFile.readline()
+        colNum = self.getColNum(firstLine, self.colname)
+        wFile = open(self.filename + "1" + ".tmp", "w+")
 
+        # copying first line
+        wFile.write(firstLine)
+
+        lineString = rFile.readline()
+        lineList = lineString.split(',')
+
+        while lineString != "":
+            if lineList[colNum] == old_value:
+                lineList[colNum] = new_value
+                lineString = lineList[colNum]
+                wFile.write(lineString)
+                lineString = rFile.readline()
+                lineList = lineString.split(',')
+
+            else:
+                wFile.write(lineString)
+                lineString = rFile.readline()
+                lineList = lineString.split(',')
+
+        os.rename(wFile, self.filename)
 
 # sf = SortedFile('SortedFile.txt', 'currency')
 # sf.create('kiva.txt')
