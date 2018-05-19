@@ -295,7 +295,7 @@ class SortedFile:
         while lineString != "":
             if lineList[colNum] == old_value:
                 lineList[colNum] = new_value
-                lineString = lineList[colNum]
+                lineString = lineList
                 wFile.write(lineString)
                 lineString = rFile.readline()
                 lineList = lineString.split(',')
