@@ -295,19 +295,24 @@ class SortedFile:
 
         lineString = rFile.readline()
         lineList = lineString.split(',')
+        flag = False
 
         while lineString != "":
-            if lineList[colNum] == old_value:
-                lineList[colNum] = new_value
-                lineString = lineList
+            for i in range(0, len(lineList)):
+                if lineList[i] == old_value and flag == False:
+                    lineList[i] = new_value
+                    lineString = lineList
+                    wFile.write(lineString)
+                    flag = True
+                    lineString = rFile.readline()
+                    lineList = lineString.split(',')
+
+            if flag == False:
                 wFile.write(lineString)
                 lineString = rFile.readline()
                 lineList = lineString.split(',')
 
-            else:
-                wFile.write(lineString)
-                lineString = rFile.readline()
-                lineList = lineString.split(',')
+            flag = False
 
         os.rename(wFile, self.filename)
 
@@ -323,6 +328,10 @@ class Hash:
         :param file_name: the name of the hash file to create. example: kiva_hash.txt
         :param N: number of buckets/slots.
         """
+        self.filename = file_name
+        self.numOfBuckets = N
+        wFile = open(file_name, "w+")
+        wFile.close()
 
     def create(self, source_file, col_name):
         """
@@ -372,6 +381,5 @@ class Hash:
 
 
 
-test1 = SortedFile("Test1.txt", "sector")
-test1.create("kiva_loans.txt")
-
+# test1 = SortedFile("Test1.txt", "sector")
+# test1.create("kiva_loans.txt")
