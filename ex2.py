@@ -142,6 +142,7 @@ class SortedFile:
         wFile = open(file_name, "w+")
         wFile.close()
 
+
     def getColNum(self, firstLine, colName):
         """
         this method will return the number of the attribute wanted
@@ -157,6 +158,7 @@ class SortedFile:
                 return i
 
         return -1
+
 
     def create(self, source_file):
         """
@@ -208,8 +210,6 @@ class SortedFile:
             lineList = lineString.split(',')
 
 
-
-
     def insert(self, line):
         """
         The function insert new line to sorted file according to the value of col_name.
@@ -219,6 +219,8 @@ class SortedFile:
         rFile = open (self.filename, 'r')
         colNum = self.getColNum(line, self.colname)
         wFile = open(self.filename + "1" + ".tmp", "w+")
+
+
 
         # copying first line
         firstLine = rFile.readline()
@@ -244,6 +246,7 @@ class SortedFile:
                 flag = True
 
         os.rename(wFile, self.filename)
+
 
     def delete(self, value):
         """
@@ -274,6 +277,7 @@ class SortedFile:
                 lineList = lineString.split(',')
 
         os.rename(wFile, self.filename)
+
 
     def update(self, old_value, new_value):
         """
