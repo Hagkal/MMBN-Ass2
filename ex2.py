@@ -139,6 +139,7 @@ class SortedFile:
 
         self.filename = file_name
         self.colname = col_name
+        self.title=""
         wFile = open(file_name, "w+")
         wFile.close()
 
@@ -159,6 +160,19 @@ class SortedFile:
 
         return -1
 
+    def __copyFunc(self, copyFrom, copyTo):
+
+        #rFile = open (copyFrom, "r+")
+        #wFile = open (copyTo, 'w+')
+        copyTo.seek(0)
+        copyFrom.seek(0)
+        line = copyFrom.readline()
+
+        while line != "":
+            copyTo.write(line)
+            copyTo.flush()
+            line = copyFrom.readline()
+
 
     def create(self, source_file):
         """
@@ -167,47 +181,65 @@ class SortedFile:
         """
 
         rFile = open(source_file, "r")
-        wFile1 = open(self.filename + "1" + ".tmp", "w+")
+        wFile1 = open(self.filename, "w+")
         wFile2 = open(self.filename + "2" + ".tmp", "w+")
 
         firstLine = rFile.readline()
+        self.title= firstLine
         colNum = self.getColNum(firstLine, self.colname)
 
         lineString = rFile.readline()
+        lineLength = len(lineString)*(-1) - 1
         lineList = lineString.split(',')
         wFile1.write(lineString)
+        lineString = rFile.readline()
+        lineList = lineString.split(',')
 
-        while lineString != "":
+        i=0
+        while lineString != "" and i < 500:
             value = lineList[colNum]
+            wFile1.seek(lineLength , 2)
             linetemp1String = wFile1.readline()
             linetemp1List = linetemp1String.split(',')
             flag = False
             valuetemp1 = linetemp1List[colNum]
 
-            if value > valuetemp1:
+            if value >= valuetemp1:
+                wFile1.seek(0, 2)
                 wFile1.write(lineString)
 
             else:
+                wFile1.seek(0)
+                wFile2.seek(0)
+                linetemp1String = wFile1.readline()
+                linetemp1List = linetemp1String.split(',')
                 while linetemp1String != "":
-                    if valuetemp1 < value:
+                    valuetemp1 = linetemp1List[colNum]
+                    if value > valuetemp1 and flag == False:
                         wFile2.write(linetemp1String)
+                        wFile2.flush()
 
-                    elif flag == False and value < valuetemp1:
+                    elif value <= valuetemp1 and flag == False:
                         wFile2.write(lineString)
+                        wFile2.flush()
                         flag = True
 
-                    else:
+                    if flag == True:
                         wFile2.write(linetemp1String)
+                        wFile2.flush()
 
                     linetemp1String = wFile1.readline()
                     linetemp1List = linetemp1String.split(',')
-                    valuetemp1 = linetemp1List[colNum]
 
-                os.rename(wFile1, wFile2)
-                os.rename(wFile2, wFile1)
+                self.__copyFunc(wFile2, wFile1)
+                wFile1.seek(lineLength, 2)
+                wFile2.close()
+                wFile2 = open(wFile2.name, "w+")
 
             lineString = rFile.readline()
             lineList = lineString.split(',')
+            i+=1
+
 
 
     def insert(self, line):
@@ -217,14 +249,8 @@ class SortedFile:
         """
 
         rFile = open (self.filename, 'r')
-        colNum = self.getColNum(line, self.colname)
+        colNum = self.getColNum(self.title, self.colname)
         wFile = open(self.filename + "1" + ".tmp", "w+")
-
-
-
-        # copying first line
-        firstLine = rFile.readline()
-        wFile.write(firstLine)
 
         lineString = rFile.readline()
         lineList = lineString.split(',')
@@ -244,8 +270,10 @@ class SortedFile:
             else:
                 wFile.write(line)
                 flag = True
-
-        os.rename(wFile, self.filename)
+        wFile.close()
+        rFile.close()
+        os.rename(rFile.name, "tempo")
+        os.rename(wFile.name, self.filename)
 
 
     def delete(self, value):
@@ -381,5 +409,6 @@ class Hash:
 
 
 
-# test1 = SortedFile("Test1.txt", "sector")
-# test1.create("kiva_loans.txt")
+test1 = SortedFile("Test1.txt1.tmp", "sector")
+test1.create("fixed_kiva_loans.txt")
+test1.insert("667343,999.0,PHP,Agri")
