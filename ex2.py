@@ -198,6 +198,40 @@ class Hash:
         :param file_name: the name of the hash file to create. example: kiva_hash.txt
         :param N: number of buckets/slots.
         """
+        self.fileName = file_name
+        self.numBuckets = N
+        self.title = ""
+        self.sortCol = ""
+        try:
+            open(file_name, "w+").close()
+        except IOError:
+            print "can't open file"
+
+
+    def hashFunc(self, value):
+        """
+        our hash function
+        :param value: the given value
+        :return: the currect bucket
+        """
+        return (value % self.numBuckets) + 1
+
+    def getColNum(self, firstLine, colName):
+        """
+        this method will return the number of the attribute wanted
+        :param firstLine: the complete line
+        :param colName: the attribute name
+        :return: the number of the attribute. numbered by seperator: ','
+        """
+        firstLine = firstLine[:-1]
+        att = firstLine.split(",")
+
+        for i in range(0, len(att)):
+            if att[i] == colName:
+                return i
+
+        return -1
+
 
     def create(self, source_file, col_name):
         """
@@ -216,6 +250,19 @@ class Hash:
         653088|12,653048|10,653078|8,1080148|6,653068|3,
         653089|13,
         """
+        wFile = open(self.fileName, "r+")
+        rFile = open(source_file, "r")
+
+        line = rFile.readline()
+        colNum = self.getColNum(line, col_name)
+        self.title = line
+        self.sortCol = col_name
+
+        while line != "" and colNum != -1:
+
+
+
+
 
     def add(self, value, ptr):
         """
