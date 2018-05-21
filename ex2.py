@@ -24,11 +24,12 @@ class Heap:
         :param file_name: the name of the heap file to create. example: kiva_heap.txt
         """
         self.fileName = file_name
+        self.lineLength = 0
         try:
             wFile = open(file_name, "w+")
             wFile.close()
         except IOError:
-            print"IO Error has occured"
+            print "IO Error has occured"
 
 
 
@@ -40,7 +41,12 @@ class Heap:
         try:
             heapFile = open(self.fileName, "a+")
             readFile = open(source_file, "r")
+
             currentLine = readFile.readline()
+            heapFile.write(currentLine)
+
+            currentLine = readFile.readline()
+            self.lineLength = len(currentLine)
 
             while (currentLine != ""):
                 heapFile.write(currentLine)
@@ -77,16 +83,18 @@ class Heap:
             rFile = open(self.fileName, "r+")
             wFile = open(self.fileName + ".tmp", "w+")
             line = rFile.readline()
+            iFirstLine = len(line)
+            iTotLines = -1
             colNum = self.getColNum(line, col_name)
-            flag = False
+            flag = True
 
             while line != "" and colNum != -1:
-                flag = True
                 list = line.split(",")
-                if (list[colNum] != value):
-                    wFile.write(line)
+                if (list[colNum] == value):
+                    line = "#" + line[1:]
+                wFile.write(line)
                 line = rFile.readline()
-
+                iTotLines += 1
             wFile.close()
             rFile.close()
 
@@ -98,6 +106,7 @@ class Heap:
 
         except IOError:
             print"IO Error has occured"
+
 
     def update(self, col_name, old_value, new_value, ):
         """
@@ -135,8 +144,6 @@ class Heap:
 
         except IOError:
             print "IO Error has occured"
-
-
 
 # heap = Heap('heap.txt')
 # heap.create('kiva.txt')
@@ -241,9 +248,9 @@ class Hash:
 
 
 test1 = Heap("Test1.txt")
-test1.create("kiva_loans.txt")
+test1.create("fixed_kiva_loans.txt")
 
 test1.insert("666,6.66,HAG,Omri")
 test1.update("currency", "HAG", "KAL")
 test1.update("currency", "ss", "ss")
-test1.delete("corrency", "KAL")
+test1.delete("currency", "PKR")
