@@ -160,17 +160,180 @@ class SortedFile:
         :param col_name: the name of the column to sort by. example: 'lid'
         """
 
+        self.filename = file_name
+        self.colname = col_name
+        self.title=""
+        self.length=0
+        self.linesCount=0
+        wFile = open(file_name, "w+")
+        wFile.close()
+
+
+    def getColNum(self, firstLine, colName):
+        """
+        this method will return the number of the attribute wanted
+        :param firstLine: the complete line
+        :param colName: the attribute name
+        :return: the number of the attribute. numbered by seperator: ','
+        """
+        firstLine = firstLine[:-1]
+        att = firstLine.split(",")
+
+        for i in range(0, len(att)):
+            if att[i] == colName:
+                return i
+
+        return -1
+
+    def __copyFunc(self, copyFrom, copyTo):
+
+        #rFile = open (copyFrom, "r+")
+        #wFile = open (copyTo, 'w+')
+        copyTo.seek(0)
+        copyFrom.seek(0)
+        line = copyFrom.readline()
+
+        while line != "":
+            copyTo.write(line)
+            copyTo.flush()
+            line = copyFrom.readline()
+
+    def __search(self, fileName, search):
+        rFile = open(fileName, 'r')
+        entries = self.linesCount - 1  # number of entries
+        width = self.length  # fixed width of an entry in the file padded with spaces
+        # at the end of each line
+        low = 0
+        high = entries - 1
+
+        value = ""
+        colNum = self.getColNum(self.title, self.colname)
+        while value != search and low <= high:
+            mid = (low + high) / 2
+            rFile.seek(mid * width + 1, 0)
+            lineList = rFile.readline().split(',')
+            value = lineList[colNum]
+            if search > value:
+                low = mid + 1
+            elif search < value:
+                high = mid - 1
+            else:
+                return mid
+        if value != search:
+            return -1  # for when search key is not found
+
+
     def create(self, source_file):
         """
         The function create sorted file from source file.
         :param source_file: the name of file to create from. example: kiva.txt
         """
 
+        rFile = open(source_file, "r")
+        wFile1 = open(self.filename, "w+")
+        wFile2 = open(self.filename + "2" + ".tmp", "w+")
+
+        firstLine = rFile.readline()
+        self.title= firstLine
+        colNum = self.getColNum(firstLine, self.colname)
+
+        lineString = rFile.readline()
+        self.length = len(lineString)
+        lineLength = len(lineString)*(-1) - 1
+        lineList = lineString.split(',')
+        wFile1.write(lineString)
+        lineString = rFile.readline()
+        lineList = lineString.split(',')
+        self.linesCount = 1
+        i=0
+        while lineString != "" and i < 50:
+            value = lineList[colNum]
+            wFile1.seek(lineLength , 2)
+            linetemp1String = wFile1.readline()
+            linetemp1List = linetemp1String.split(',')
+            flag = False
+            valuetemp1 = linetemp1List[colNum]
+
+            if value >= valuetemp1:
+                wFile1.seek(0, 2)
+                wFile1.write(lineString)
+
+            else:
+                wFile1.seek(0)
+                wFile2.seek(0)
+                linetemp1String = wFile1.readline()
+                linetemp1List = linetemp1String.split(',')
+                while linetemp1String != "":
+                    valuetemp1 = linetemp1List[colNum]
+                    if value > valuetemp1 and flag == False:
+                        wFile2.write(linetemp1String)
+                        wFile2.flush()
+
+                    elif value <= valuetemp1 and flag == False:
+                        wFile2.write(lineString)
+                        wFile2.flush()
+                        flag = True
+
+                    if flag == True:
+                        wFile2.write(linetemp1String)
+                        wFile2.flush()
+
+                    linetemp1String = wFile1.readline()
+                    linetemp1List = linetemp1String.split(',')
+
+                self.__copyFunc(wFile2, wFile1)
+                wFile1.seek(lineLength, 2)
+                wFile2.close()
+                wFile2 = open(wFile2.name, "w+")
+
+            lineString = rFile.readline()
+            lineList = lineString.split(',')
+            self.linesCount += 1
+
+            i+=1
+
+        wFile1.close()
+        wFile2.close()
+        rFile.close()
+        os.rename(wFile1.name, self.filename)
+        os.remove(wFile2.name)
+
+
+
     def insert(self, line):
         """
         The function insert new line to sorted file according to the value of col_name.
         :param line: string of row separated by comma. example: '653207,1500.0,USD,Agriculture'
         """
+
+        rFile = open (self.filename, 'r')
+        colNum = self.getColNum(self.title, self.colname)
+        wFile = open(self.filename + "insert" + ".tmp", "w+")
+
+        lineString = rFile.readline()
+        lineList = lineString.split(',')
+        parameterLineList = line.split(',') # line given in a list format
+        flag = False
+
+        while lineString != "":
+            if lineList[colNum] < parameterLineList[colNum] and flag == False:
+                wFile.write(lineString)
+                lineString = rFile.readline()
+                lineList = lineString.split(',')
+
+            elif flag:
+                wFile.write(lineString)
+                lineString = rFile.readline()
+
+            else:
+                wFile.write(line + '\n')
+                flag = True
+        wFile.close()
+        rFile.close()
+        os.remove(rFile.name)
+        os.rename(wFile.name, self.filename)
+
+
 
     def delete(self, value):
         """
@@ -179,13 +342,70 @@ class SortedFile:
         :param value: example: 'PKR'
         """
 
+        rFile = open(self.filename, 'r')
+        colNum = self.getColNum(self.title, self.colname)
+        wFile = open(self.filename + "delete" + ".tmp", "w+")
+
+        lineString = rFile.readline()
+        lineList = lineString.split(',')
+
+        while lineString != "":
+            if lineList[colNum].rstrip() == value:
+                lineString = rFile.readline()
+                lineList = lineString.split(',')
+
+            else:
+                wFile.write(lineString)
+                lineString = rFile.readline()
+                lineList = lineString.split(',')
+
+        rFile.close()
+        wFile.close()
+        os.remove(rFile.name)
+        os.rename(wFile.name, self.filename)
+
+
+
     def update(self, old_value, new_value):
         """
         The function update records from the sorted file where their value in col_name is old_value to new_value.
         :param old_value: example: 'TZS'
         :param new_value: example: 'NIS'
         """
+        rFile = open(self.filename, 'r')
+        colNum = self.getColNum(self.title, self.colname)
+        wFile = open(self.filename + "update" + ".tmp", "w+")
 
+        flag = False
+        oldValueLineNumber = self.__search(rFile.name, old_value)
+        counter = 0
+        check = oldValueLineNumber * self.length
+        rFile.seek(oldValueLineNumber * self.length)
+        for line in rFile:
+            lineList = line.split(',')
+            if lineList[colNum] == old_value:
+                counter += 1
+            else:
+                break
+        for line in rFile:
+            lineList = line.split(',')
+            if flag == True:
+                wFile.write(line)
+            elif (lineList[colNum] < new_value) and flag == False:
+                wFile.write(line)
+            elif (lineList[colNum] >= new_value) and flag == False:
+                for i in range(0, counter):
+                    lineString = rFile.readline()
+                    lineList = lineString.split(',')
+                    lineList[colNum] = new_value
+                    lineString = ','.join(lineList)
+                    wFile.write(lineString)
+                flag = True
+
+        rFile.close()
+        wFile.close()
+        os.remove(rFile.name)
+        os.rename(wFile.name, self.filename)
 
 # sf = SortedFile('SortedFile.txt', 'currency')
 # sf.create('kiva.txt')
@@ -388,6 +608,17 @@ class Hash:
 #lalalala
 
 
+
+def seekTest(fileName):
+    rFile = open(fileName, "r")
+    line = rFile.readline()
+    width = len(line)
+    rFile.seek(0)
+    for i in range(49):
+        rFile.seek(i*width + 1, 0)
+        line2 = rFile.readline()
+        print line2
+seekTest("Test2.txt")
 """
 test1 = Hash("Test1.txt", 10)
 test1.create("fixed_kiva_loans1.txt", "lid")
