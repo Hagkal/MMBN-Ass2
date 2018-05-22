@@ -214,7 +214,16 @@ class Hash:
         :param value: the given value
         :return: the currect bucket
         """
-        return (value % self.numBuckets) + 1
+        try:
+            i = int(value)
+            return (i % self.numBuckets) + 1
+        except ValueError:
+            try:
+                f = float(value)
+                return int(f%self.numBuckets) + 1
+            except ValueError:
+                return (ord(value[0])%self.numBuckets)+1
+
 
     def getColNum(self, firstLine, colName):
         """
@@ -250,19 +259,56 @@ class Hash:
         653088|12,653048|10,653078|8,1080148|6,653068|3,
         653089|13,
         """
-        wFile = open(self.fileName, "r+")
-        rFile = open(source_file, "r")
+        try:
 
-        line = rFile.readline()
-        colNum = self.getColNum(line, col_name)
-        self.title = line
-        self.sortCol = col_name
+            targetFile = open(self.fileName, "w+")
+            for j in range(self.numBuckets - 1):
+                targetFile.write("\n")
+            targetFile.close()
+            sourceFile = open(source_file, "r")
 
-        while line != "" and colNum != -1:
+            line = sourceFile.readline()
+            colNum = self.getColNum(line, col_name)
+            self.title = line
+            self.sortCol = col_name
+            lineCount = 0
+            line = sourceFile.readline()
 
+            while line != "" and colNum != -1:
+                list = line.split(",")
+                idx = self.hashFunc(list[colNum])
+                lineCount += 1
 
+                if idx == self.numBuckets: # last line case
+                    targetFile = open(self.fileName, "a+")
+                    targetFile.write(list[colNum] + "|" + str(lineCount) + ",")
+                    targetFile.close()
 
+                else: # not last line case. need to copy everything
+                    targetFile = open(self.fileName, "r")
+                    newTargetFile = open("tmp", "w+")
+                    for i in range(idx - 1):
+                        newTargetFile.write(targetFile.readline())
 
+                    tmpLine = targetFile.readline()
+                    tmpLine = tmpLine[:-1] + list[colNum] + "|" + str(lineCount) + ",\n"
+                    newTargetFile.write(tmpLine)
+                    tmpLine = targetFile.readline()
+
+                    while tmpLine != "":
+                        newTargetFile.write(tmpLine)
+                        tmpLine = targetFile.readline()
+
+                    targetFile.close()
+                    newTargetFile.close()
+                    os.remove(targetFile.name)
+                    os.rename(newTargetFile.name, self.fileName)
+
+                line = sourceFile.readline()
+
+            sourceFile.close()
+        except IOError:
+            print "can't open file"
 
     def add(self, value, ptr):
         """
@@ -270,6 +316,26 @@ class Hash:
         :param value: the value of col_name of the new instance.
         :param ptr: the row number of the new instance in the heap file.
         """
+        try:
+            oldFile = open(self.fileName, "r")
+            newFile = open("tmp", "w+")
+
+            idx = self.hashFunc(value)
+            for i in range(idx-1):
+                newFile.write(oldFile.readline())
+
+            newFile.write(oldFile.readline()[:-1] + str(value) + "|" + str(ptr) + ",\n")
+
+            for line in oldFile:
+                newFile.write(line)
+
+            oldFile.close()
+            newFile.close()
+            os.remove(oldFile.name)
+            os.rename(newFile.name, self.fileName)
+
+        except IOError:
+            print("can't open file")
 
 
     def remove(self, value, ptr):
@@ -278,7 +344,35 @@ class Hash:
         :param value: the value of col_name.
         :param ptr: the row number of the instance in the heap file.
         """
+        try:
+            oldFile = open(self.fileName, "r")
+            newFile = open("tmp", "w+")
 
+            idx = self.hashFunc(value)
+            for i in range(idx-1):
+                newFile.write(oldFile.readline())
+
+            line = oldFile.readline()
+            list = line.split(",")
+            line = ""
+            for item in list:
+                list2 = item.split("|")
+                if ((list2[0] != value or list2[1] != ptr) and list2[0] != "\n"):
+                    line += str(item) + ","
+            line += "\n"
+
+            newFile.write(line)
+
+            for l in oldFile:
+                newFile.write(l)
+
+            oldFile.close()
+            newFile.close()
+            os.remove(oldFile.name)
+            os.rename(newFile.name, self.fileName)
+
+        except IOError:
+            print "can't open file"
 
 # heap = Heap("heap_for_hash.txt")
 # hash = Hash('hash_file.txt', 10)
@@ -294,10 +388,13 @@ class Hash:
 
 
 
-test1 = Heap("Test1.txt")
-test1.create("fixed_kiva_loans.txt")
-
+test1 = Hash("Test1.txt", 10)
+test1.create("fixed_kiva_loans1.txt", "lid")
+test1.add("653082", "9")
+test1.remove("653082", "9")
+"""
 test1.insert("666,6.66,HAG,Omri")
 test1.update("currency", "HAG", "KAL")
 test1.update("currency", "ss", "ss")
 test1.delete("currency", "PKR")
+"""
