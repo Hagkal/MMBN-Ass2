@@ -1,4 +1,5 @@
 import os
+import time
 
 class Heap:
 
@@ -387,14 +388,169 @@ class Hash:
 #lalalala
 
 
-
+"""
 test1 = Hash("Test1.txt", 10)
 test1.create("fixed_kiva_loans1.txt", "lid")
 test1.add("653082", "9")
 test1.remove("653082", "9")
-"""
+
 test1.insert("666,6.66,HAG,Omri")
 test1.update("currency", "HAG", "KAL")
 test1.update("currency", "ss", "ss")
 test1.delete("currency", "PKR")
 """
+
+def creationTest():
+    """
+    function that will print the time of creation for all 4 types of files
+    :return:
+    """
+    heap = Heap("heapTest.txt")
+    start = time.time()
+    heap.create("fixed_kiva_loans1.txt")
+    end = time.time()
+    print "Heap creation time: " + str(end - start)
+
+    sorted = SortedFile("sortedFile.txt", "sector")
+    start = time.time()
+    sorted.create("fixed_kiva_loans1.txt")
+    end = time.time()
+    print "Sorted file creation time: " + str(end - start)
+
+    hash10 = Hash("Hash10.txt", 10)
+    start = time.time()
+    hash10.create("fixed_kiva_loans1.txt", "lid")
+    end = time.time()
+    print "Hash with N=10 creation time: " + str(end-start)
+
+    hash100 = Hash("Hash100.txt", 100)
+    start = time.time()
+    hash100.create("fixed_kiva_loans1.txt", "lid")
+    end = time.time()
+    print "Hash with N=100 creation time: " + str(end - start)
+
+    hash1000 = Hash("Hash1000.txt", 1000)
+    start = time.time()
+    hash1000.create("fixed_kiva_loans1.txt", "lid")
+    end = time.time()
+    print "Hash with N=1000 creation time: " + str(end - start)
+
+    ############################ TEST 2
+    rFile = open("Test2.txt", "r")
+    total = 0
+
+    start = time.time()
+    for l in rFile:
+        heap.insert(l)
+    end = time.time()
+    print "Heap adding 50 records time: " + str(end-start)
+    rFile.seek(0)
+
+    start=time.time()
+    for k in rFile:
+        sorted.insert(k)
+    end = time.time()
+    print "Sorted file adding 50 records time: " + str(end-start)
+    rFile.seek(0)
+
+    start = time.time()
+    for j in rFile:
+        list = j.split(",")
+        hash10.add(list[0], "6")
+    end = time.time()
+    print "Hash with N=10 adding 50 records time: " + str(end-start)
+    rFile.seek(0)
+
+    start = time.time()
+    for h in rFile:
+        list = h.split(",")
+        hash100.add(list[0], "6")
+    end = time.time()
+    print "Hash with N=100 adding 50 records time: " + str(end-start)
+    rFile.seek(0)
+
+    start=time.time()
+    for g in rFile:
+        list = g.split(",")
+        hash1000.add(list[0], "6")
+    end = time.time()
+    print "Hash with N=1000 adding 50 records time: " + str(end-start)
+    rFile.seek(0)
+
+    ################# TEST 3
+    originalFile = open("fixed_kiva_loans1.txt", "r")
+    line = originalFile.readline()
+    total = 0
+    for i in range(50):
+        line = originalFile.readline()
+        list = line.split(",")
+        start = time.time()
+        heap.update("lid", list[0], "111222")
+        end = time.time()
+        total += (end-start)
+    print "Heap updating 50 records time: " + str(total)
+    originalFile.seek(0)
+
+    line = originalFile.readline()
+    total = 0
+    for i in range(50):
+        line = originalFile.readline()
+        list = line.split(",")
+        start = time.time()
+        heap.update("sector", list[3], "OMRI")
+        end = time.time()
+        total += (end - start)
+    print "Heap updating 50 records time: " + str(total)
+
+    ################## TEST 4
+    total = 0
+
+    for l in rFile:
+        list = l.split(",")
+        start = time.time()
+        heap.delete("lid", list[0])
+        end = time.time()
+        total += (end-start)
+    print "Heap deleting 50 records time: " + str(total)
+
+    rFile.seek(0)
+    total = 0
+    for l in rFile:
+        list = l.split(",")
+        start = time.time()
+        sorted.delete(list[3])
+        end = time.time()
+        total += (end-start)
+    print "Sorted file deleting 50 records time: " + str(total)
+
+    rFile.seek(0)
+    total = 0
+    for l in rFile:
+        list = l.split(",")
+        start = time.time()
+        hash10.remove(list[0], "6")
+        end = time.time()
+        total += (end - start)
+    print "Hash with N=10 deleting 50 records time: " + str(total)
+
+    rFile.seek(0)
+    total = 0
+    for l in rFile:
+        list = l.split(",")
+        start = time.time()
+        hash100.remove(list[0], "6")
+        end = time.time()
+        total += (end - start)
+    print "Hash with N=100 deleting 50 records time: " + str(total)
+
+    rFile.seek(0)
+    total = 0
+    for l in rFile:
+        list = l.split(",")
+        start = time.time()
+        hash1000.remove(list[0], "6")
+        end = time.time()
+        total += (end - start)
+    print "Hash with N=1000 deleting 50 records time: " + str(total)
+
+
