@@ -545,7 +545,10 @@ class Hash:
             for i in range(idx-1):
                 newFile.write(oldFile.readline())
 
-            newFile.write(oldFile.readline()[:-1] + str(value) + "|" + str(ptr) + ",\n")
+            line = oldFile.readline()[:-1 if idx != self.numBuckets else None] + str(value) + "|" + str(ptr) + ",\n"
+            if idx == self.numBuckets:
+                line = line[:-1]
+            newFile.write(line)
 
             for line in oldFile:
                 newFile.write(line)
@@ -574,13 +577,17 @@ class Hash:
                 newFile.write(oldFile.readline())
 
             line = oldFile.readline()
-            list = line.split(",")
+            list = line[:-1 if idx == self.numBuckets else -2].split(",")
             line = ""
             for item in list:
+                if item == "":
+                    break
                 list2 = item.split("|")
                 if ((list2[0] != value or list2[1] != ptr) and list2[0] != "\n"):
                     line += str(item) + ","
-            line += "\n"
+
+            if idx != self.numBuckets:
+                line += "\n"
 
             newFile.write(line)
 
@@ -608,23 +615,40 @@ class Hash:
 #lalalala
 
 
-
+"""
 def seekTest(fileName):
     rFile = open(fileName, "r")
     line = rFile.readline()
     width = len(line)
     rFile.seek(0)
     for i in range(49):
-        rFile.seek(i*width + 1, 0)
+        rFile.seek(i*(width+1), 0)
+        print rFile.tell()
         line2 = rFile.readline()
         print line2
+
 seekTest("Test2.txt")
 """
 test1 = Hash("Test1.txt", 10)
-test1.create("fixed_kiva_loans1.txt", "lid")
-test1.add("653082", "9")
-test1.remove("653082", "9")
-
+test1.create("fixed_kiva_loans50.txt", "lid")
+#test1.add("653082", "9")
+with open("Test1.txt", "r") as rFile:
+    l = "653060|10,653080|19,653050|22,653090|38,653070|44,653051|1,653091|16,653061|24,653071|28,653081|41,653062|13,653052|17,653072|33,653272|46,653092|49,653063|4,653073|29,653083|36,653084|5,653054|15,653074|25,653064|39,653075|14,653065|20,653055|21,653085|43,653185|45,653066|18,653056|27,653076|32,653086|34,653067|6,653087|31,653057|37,653077|40,653068|3,653078|7,653048|9,653088|11,653058|35,653418|48,653089|12,653079|23,653069|26,653059|30,653049|42,653359|47,653149|50,\n"
+    rFile.close()
+    list = l[:-2].split(",")
+    for item in list:
+        list2= item.split("|")
+        test1.remove(list2[0], list2[1])
+    test1.remove("653082", "8")
+    test1.remove("653053", "2")
+with open("Test1.txt", "r") as rFile:
+    l = "653060|10,653080|19,653050|22,653090|38,653070|44,653051|1,653091|16,653061|24,653071|28,653081|41,653062|13,653052|17,653072|33,653272|46,653092|49,653063|4,653073|29,653083|36,653084|5,653054|15,653074|25,653064|39,653075|14,653065|20,653055|21,653085|43,653185|45,653066|18,653056|27,653076|32,653086|34,653067|6,653087|31,653057|37,653077|40,653068|3,653078|7,653048|9,653088|11,653058|35,653418|48,653089|12,653079|23,653069|26,653059|30,653049|42,653359|47,653149|50,\n"
+    rFile.close()
+    list = l[:-2].split(",")
+    for item in list:
+        list2= item.split("|")
+        test1.add(list2[0], list2[1])
+"""
 test1.insert("666,6.66,HAG,Omri")
 test1.update("currency", "HAG", "KAL")
 test1.update("currency", "ss", "ss")
